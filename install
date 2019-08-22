@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# For mac or linux users, you can download and install by
+# curl -s https://static.real.dev/cli/install | sh
+
+DONE="✨ Done! Now type 'real' and get started!"
+
+case "$(uname -s)" in
+    Darwin*)    NAME=real-macos.gz;;
+    Linux*)     NAME=real-linux.gz;;
+    CYGWIN*)    NAME=real-linux.gz;;
+    MINGW*)     NAME=real-linux.gz;;
+    *)          NAME=real-linux.gz
+esac
+
+download_install() {
+  local download_link=$1
+  echo "😊 Hi, I am Real.Dev installer."
+  echo "👻 I'm going to install the 'real' CLI."
+
+  echo "⏳ Hang on, awesomeness is being downloaded"
+  curl -o /tmp/real.gz $download_link
+  gunzip -f /tmp/real.gz
+  chmod +x /tmp/real
+
+  echo "🤓 It will be installed to ~/bin."
+  mv /tmp/real ~/bin/real 2>/dev/null
+  local e=$?
+  if [ ! "${e}" -eq "0" ]; then
+    echo "⌨️ Please type your root passport to proceed:"
+    sudo mv /tmp/real ~/bin/real
+    echo "$DONE"
+  else
+    echo "$DONE"
+  fi
+}
+
+determine_download_link() {
+  local latest_commit="$(curl -s --ssl https://static.real.dev/cli/VERSION | tail -1 | cut -d' ' -f2)"
+  local version="commit-${latest_commit}"
+  local download_link=https://static.real.dev/cli/"$version"/"$NAME"
+  echo $download_link
+}
+
+link="$(determine_download_link $NAME)"
+download_install $link
