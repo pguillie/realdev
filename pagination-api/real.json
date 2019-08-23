@@ -1,6 +1,8 @@
 {
-  "task": "pagination-api",
-  "stack": {},
-  "configSource": "env",
-  "template": "default"
+    "task": "pagination-api",
+    "stack": {
+	"type": "nodejs",
+    },
+    "configSource": "env",
+    "template": "default"
 }
