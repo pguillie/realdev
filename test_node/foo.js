@@ -1,29 +1,19 @@
 var express = require('express');
-var ftp = require('ftp');
-var argv = require('minimist')(process.argv);
-
-
-if ('p' in argv == false || typeof(argv['p']) != 'string')
-    process.exit(1);
-
-console.log("File path: " + argv['p']);
-
-
 var app = express();
 
-app.get('/:file', function(req, res) {
-    res.setHeader('Content-Type', 'text/plain');
-    res.send('Page:' + req.params.file);
-});
+const fs = require('fs');
+var sortJsonArray = require('sort-json-array');
 
-app.listen(8080);
+const port = process.env.PORT;
+const pageSize = process.env.PAGE_SIZE;
 
-
-var client = new ftp();
-client.on('ready', function() {
-    client.put(argv['p'], 'test_file', function(err) {
-    	if (err) throw err;
-    	client.end();
+app.get('/logs', function(req, res) {
+    fs.readFile('db.json', (err, data) => {
+	if (err) throw err;
+	logs = sortJsonArray(JSON.parse(data), 'pk', 'des');
+	res.setHeader('Content-Type', 'text/plain');
+	res.json([pageSize, logs[0], logs[1]]);
     });
 });
-client.connect({host: '10.11.5.14', port: '1234', user: 'pguillie'});
+
+app.listen(port);
