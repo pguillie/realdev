@@ -1,0 +1,14 @@
+{
+   "name": "responsive-color",
+   "version": "1.0.0",
+   "description": "This is for the node task responsive-color. Please leave build as it is and fill in start scripts",
+   "main": "index.js",
+   "scripts": {
+      "start": "node index.js"
+   },
+   "dependencies": {
+      "express": "^4.16.4"
+   },
+   "author": "",
+   "license": "ISC"
+}
