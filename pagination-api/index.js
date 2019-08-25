@@ -4,10 +4,9 @@ var app = express();
 const fs = require('fs');
 
 const port = process.env.PORT;
-const pageSize = parseInt(process.env.PAGE_SIZE);
 
+// read database file
 let logs;
-
 fs.readFile('db.json', (err, data) => {
     if (err) throw err;
     logs = JSON.parse(data).sort(function(a, b) {return b.pk - a.pk});
@@ -15,20 +14,31 @@ fs.readFile('db.json', (err, data) => {
 
 app.get('/logs', function(req, res) {
 
-    let cursor = parseInt(req.query.cursor);
+    // get cursor and page size
+    let cursor;
+    var pageSize = parseInt(process.env.PAGE_SIZE);
+    if (isNaN(pageSize))
+	pageSize = 2;
+    if (typeof req.query.cursor === 'undefined')
+	cursor = 0;
+    else
+	cursor = parseInt(req.query.cursor);
 
+    // wait for the file to be read
     while (typeof logs !== 'object') ;
 
-    if (Number.isInteger(cursor) == false || cursor < 0 || cursor >= logs.length)
-	cursor = 0;
+    // check request validity
+    if (Number.isInteger(cursor) == false
+	|| cursor < 0 || cursor >= logs.length) {
+	res.status(400).send('Bad request');
+	return ;
+    }
 
-    let nextPage;
-    let prevPage;
-
+    // set next and prev
+    let nextPage, nextCursor, prevPage, prevCursor;
     const baseCursor = Math.floor(cursor / pageSize) * pageSize;
-    let nextCursor = baseCursor + pageSize;
-    let prevCursor = baseCursor - pageSize;
-
+    nextCursor = baseCursor + pageSize;
+    prevCursor = baseCursor - pageSize;
     if (nextCursor < logs.length)
 	nextPage = 'http://localhost:' + port + '/logs/?cursor=' + nextCursor;
     else
@@ -38,16 +48,15 @@ app.get('/logs', function(req, res) {
     else
 	prevPage = null;
 
+    // prepare and send output
     var results = [];
-    for (var i = baseCursor; i < (nextCursor < logs.length ? nextCursor : logs.length); i++)
-	results.push(logs[i].fields);
+    var i = (nextCursor < logs.length ? nextCursor : logs.length);
+    while (i-- > baseCursor)
+	results.unshift(logs[i].fields);
 
-    res.setHeader('Content-Type', 'text/plain');
-    res.json({
+    res.status(200).json({
 	'next': nextPage,
 	'previous': prevPage,
 	'results': results
     });
-});
-
-app.listen(port);
+}).listen(port);
