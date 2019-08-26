@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Responsive Color</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+
+let config = JSON.parse("<%= jsConfig %>".replace(/&#34;/gi, "\""));
+
+function setBackgroundColor() {
+    let width = document.documentElement.clientWidth;
+    let height = document.documentElement.clientHeight;
+    let bgc = 'white';
+
+    for (let i in config) {
+	if (width <= config[i][0] && height <= config[i][1]) {
+	    bgc = config[i][2];
+	    break ;
+	}
+    }
+    document.body.style.backgroundColor = bgc;
+}
+
+window.addEventListener("resize", setBackgroundColor);
+setBackgroundColor();
+
+    </script>
+  </body>
+</html>
